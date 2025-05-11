@@ -1,53 +1,45 @@
-
-const express = require("express");
-const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
-require("dotenv").config();
+onst express = require('express');
+const bodyParser = require('body-parser');
+const path = require('path');
+const fs = require('fs');
+require('dotenv').config();
+const { Configuration, OpenAIApi } = require("openai");
 
 const app = express();
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
-app.set("view engine", "ejs");
+const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAIApi(configuration);
 
-app.get("/", (req, res) => {
-  res.render("index", { response: null });
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.get('/', (req, res) => {
+  res.render('index', { response: null });
 });
 
-app.post("/", async (req, res) => {
-  const question = req.body.question;
-  const promptPath = path.join(__dirname, "prompts", "act_prompt.txt");
+app.post('/ask', async (req, res) => {
+  const userInput = req.body.question;
+  const theme = req.body.theme || "ansia";
+  const promptPath = path.join(__dirname, 'prompts', `${theme}.txt`);
 
-  let systemPrompt = "Risposta terapeutica ACT.";
-  if (fs.existsSync(promptPath)) {
-    systemPrompt = fs.readFileSync(promptPath, "utf8");
-  }
+  const promptBase = fs.readFileSync(promptPath, 'utf8');
+  const prompt = `${promptBase}
+Utente: ${userInput}
+Risposta terapeutica:`;
 
   try {
-    const completion = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gpt-4",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: question }
-        ]
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-    const reply = completion.data.choices[0].message.content;
-    res.render("index", { response: reply });
-  } catch (error) {
-    res.render("index", { response: "Errore: " + error.message });
+    const completion = await openai.createCompletion({
+      model: "text-davinci-003",
+      prompt,
+      max_tokens: 500,
+      temperature: 0.7,
+    });
+    res.render('index', { response: completion.data.choices[0].text.trim() });
+  } catch (e) {
+    res.render('index', { response: "Errore nella generazione della risposta." });
   }
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Mental Wealth LIVE sulla porta ${port}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("MentalChat avviato sulla porta " + PORT));
