@@ -3,7 +3,7 @@
   "name": "mental-wealth-final",
   "version": "1.0.0",
   "description": "Piattaforma ACT con prompt raffinato",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js"
   },
