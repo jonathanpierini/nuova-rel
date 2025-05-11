@@ -1,24 +1,31 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <title>Mental Wealth - Prompt Raffinato</title>
-  <link rel="stylesheet" href="/style.css" />
+  <meta charset="UTF-8">
+  <title>Mental Wealth</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <div class="container">
     <h1>Mental Wealth</h1>
-    <p class="subtitle">Benvenuto, sei in un ospazio protetto. Qualsiasi pensiero o emozione tu abbia va bene.</p>
-    <form method="post">
-      <textarea name="question" placeholder="Dimmi cosa ti ha spinto a cercare supporto?" required></textarea>
-      <button type="submit">Ricevi risposta</button>
+    <p>Scegli il tema su cui vuoi lavorare oggi:</p>
+    <form action="/ask" method="POST">
+      <div class="card-group">
+        <button type="submit" name="theme" value="ansia" class="card">Ansia</button>
+        <button type="submit" name="theme" value="ossessioni" class="card">Ossessioni</button>
+        <button type="submit" name="theme" value="trauma" class="card">Trauma</button>
+        <button type="submit" name="theme" value="relazioni" class="card">Relazioni</button>
+      </div>
+      <textarea name="question" placeholder="Scrivi cosa provi, senti o ti preoccupa..."></textarea>
+      <button type="submit" class="submit-btn">Invia</button>
     </form>
+
     <% if (response) { %>
-    <div class="response">
-      <h2>Risposta terapeutica:</h2>
-      <p><%= response %></p>
-    </div>
+      <div class="response">
+        <h2>Risposta:</h2>
+        <p><%= response %></p>
+      </div>
     <% } %>
   </div>
 </body>
