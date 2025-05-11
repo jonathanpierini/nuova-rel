@@ -61,8 +61,3 @@ app.listen(PORT, () => {
   console.log(`Mental Wealth LIVE sulla porta ${PORT}`);
 });
 
-
-
-app.listen(port, () => {
-  console.log(`Mental Wealth LIVE sulla porta ${port}`);
-});
