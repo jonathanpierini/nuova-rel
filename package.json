@@ -1,0 +1,16 @@
+
+{
+  "name": "mental-wealth-final",
+  "version": "1.0.0",
+  "description": "Piattaforma ACT con prompt raffinato",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "ejs": "^3.1.9"
+  }
+}
