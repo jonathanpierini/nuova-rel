@@ -3,30 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <title>Mental Wealth</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/style.css">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; background: #f4f4f4; }
+    h1 { color: #333; }
+    form { background: #fff; padding: 2rem; border-radius: 8px; }
+    .question { margin-bottom: 1.5rem; }
+    label { font-weight: bold; display: block; margin-bottom: 0.5rem; }
+    select { width: 100%; padding: 0.5rem; }
+    button { padding: 0.7rem 1.5rem; background-color: #1976d2; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    .response-box { margin-top: 2rem; }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Mental Wealth</h1>
-    <p>Scegli il tema su cui vuoi lavorare oggi:</p>
-    <form action="/ask" method="POST">
-      <div class="card-group">
-        <button type="submit" name="theme" value="ansia" class="card">Ansia</button>
-        <button type="submit" name="theme" value="ossessioni" class="card">Ossessioni</button>
-        <button type="submit" name="theme" value="trauma" class="card">Trauma</button>
-        <button type="submit" name="theme" value="relazioni" class="card">Relazioni</button>
-      </div>
-      <textarea name="question" placeholder="Scrivi cosa provi, senti o ti preoccupa..."></textarea>
-      <button type="submit" class="submit-btn">Invia</button>
-    </form>
+  <h1>Benvenuto in Mental Wealth</h1>
+  <p>Ti guideremo in un percorso personalizzato basato sulle tue risposte iniziali.</p>
 
-    <% if (response) { %>
-      <div class="response">
-        <h2>Risposta:</h2>
-        <p><%= response %></p>
+  <form id="quiz-form">
+    <% questions.forEach(function(q) { %>
+      <div class="question">
+        <label for="<%= q.id %>"><%= q.text %></label>
+        <select name="<%= q.id %>" id="<%= q.id %>" required>
+          <% q.options.forEach(function(opt, idx) { %>
+            <option value="<%= idx %>"><%= opt %></option>
+          <% }); %>
+        </select>
       </div>
-    <% } %>
-  </div>
+    <% }); %>
+    <button type="submit">Inizia il percorso</button>
+  </form>
+
+  <script>
+    document.getElementById("quiz-form").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const responses = [];
+      for (const [key, value] of formData.entries()) {
+        responses.push({ questionId: key, answerIndex: parseInt(value) });
+      }
+
+      const res = await fetch("/api/quiz/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ responses })
+      });
+
+      if (res.ok) {
+        window.location.href = "/chat";
+      } else {
+        alert("Errore nel salvataggio del quiz.");
+      }
+    });
+  </script>
 </body>
 </html>
