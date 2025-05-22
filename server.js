@@ -13,9 +13,10 @@ app.use(express.json());
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
-// Halifax Prompt Adaptor
 const { calculateHalifaxProfile } = require('./utils/halifax');
 const questions = require('./quiz/questions.json');
+
+let lastProfile = null;
 
 function getDominantPole(profile) {
   return Object.entries(profile).sort((a, b) => b[1] - a[1])[0][0];
@@ -33,8 +34,10 @@ function getTone(pole) {
   return tones[pole] || "centrato sul benessere psicologico";
 }
 
-// ROTTA QUIZ: riceve risposte e salva il profilo
-let lastProfile = null;
+// QUIZ
+app.get('/', (req, res) => {
+  res.render('index', { questions });
+});
 
 app.post('/api/quiz/submit', (req, res) => {
   const responses = req.body.responses;
@@ -42,9 +45,9 @@ app.post('/api/quiz/submit', (req, res) => {
   res.json({ profile: lastProfile });
 });
 
-// ROTTA CHAT
-app.get('/', (req, res) => {
-  res.render('index', { response: null });
+// CHAT
+app.get('/chat', (req, res) => {
+  res.render('chat', { response: null });
 });
 
 app.post('/ask', async (req, res) => {
@@ -58,10 +61,15 @@ app.post('/ask', async (req, res) => {
     if (lastProfile) {
       const pole = getDominantPole(lastProfile);
       const tone = getTone(pole);
-      promptTone = `\n\n[Adattamento Halifax: il tono della risposta sarà ${tone} perché il tuo profilo attuale mostra prevalenza nel polo ACT "${pole}"]`;
+      promptTone = `
+
+[Adattamento Halifax: il tono della risposta sarà ${tone} perché il tuo profilo attuale mostra prevalenza nel polo ACT "${pole}"]`;
     }
 
-    const fullPrompt = `${basePrompt}${promptTone}\n\nUtente: ${question}\nAssistente:`;
+    const fullPrompt = `${basePrompt}${promptTone}
+
+Utente: ${question}
+Assistente:`;
 
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: "gpt-4",
@@ -75,11 +83,11 @@ app.post('/ask', async (req, res) => {
     });
 
     const reply = response.data.choices[0].message.content;
-    res.render('index', { response: reply });
+    res.render('chat', { response: reply });
 
   } catch (error) {
     console.error("Errore OpenAI:", error.message);
-    res.render('index', { response: "Si è verificato un errore nel generare la risposta." });
+    res.render('chat', { response: "Si è verificato un errore nel generare la risposta." });
   }
 });
 
